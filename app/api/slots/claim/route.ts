@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { claimSlotSchema, validateSlotNumber, parseContactInfo } from '@/lib/validation/backend-validation';
 import { FirestoreMatch, FirestoreTeam, FirestorePlayer } from '@/lib/types/backend';
+import type { Transaction } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const contactInfo = parseContactInfo(emailOrPhone);
 
     // Race-safe slot claiming using Firestore transaction
-    const result = await adminDb.runTransaction(async (transaction) => {
+    const result = await adminDb.runTransaction(async (transaction: Transaction) => {
       // 1. Verify match exists and is open
       const matchRef = adminDb.collection('matches').doc(matchId);
       const matchDoc = await transaction.get(matchRef);

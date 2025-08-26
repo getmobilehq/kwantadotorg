@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { leaveSlotSchema } from '@/lib/validation/backend-validation';
 import { FirestorePlayer } from '@/lib/types/backend';
+import type { Transaction } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { matchId, teamId, slotNumber, emailOrPhone } = validationResult.data;
 
     // Find and remove the player in a transaction for consistency
-    const result = await adminDb.runTransaction(async (transaction) => {
+    const result = await adminDb.runTransaction(async (transaction: Transaction) => {
       // Find the player in the specific slot
       const playerQuery = adminDb
         .collection('players')

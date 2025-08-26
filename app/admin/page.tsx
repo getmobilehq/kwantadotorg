@@ -243,7 +243,7 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Today's Matches</p>
+                    <p className="text-sm text-gray-600">Today&apos;s Matches</p>
                     <p className="text-2xl font-bold">
                       {matches.filter(m => {
                         const matchDate = new Date(m.date).toDateString();

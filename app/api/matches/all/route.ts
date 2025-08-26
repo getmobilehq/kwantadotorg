@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { FirestoreMatch, FirestoreTeam, FirestorePlayer, Match, Team, Player } from '@/lib/types/backend';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,29 +12,29 @@ export async function GET(request: NextRequest) {
       adminDb.collection('players').get()
     ]);
 
-    const matchesData = matchesSnapshot.docs.map(doc => doc.data() as FirestoreMatch);
-    const teamsData = teamsSnapshot.docs.map(doc => doc.data() as FirestoreTeam);
-    const playersData = playersSnapshot.docs.map(doc => doc.data() as FirestorePlayer);
+    const matchesData = matchesSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as FirestoreMatch);
+    const teamsData = teamsSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as FirestoreTeam);
+    const playersData = playersSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as FirestorePlayer);
 
     // Transform data to frontend format
-    const matches: Match[] = matchesData.map(matchData => {
+    const matches: Match[] = matchesData.map((matchData: FirestoreMatch) => {
       // Find teams for this match
       const matchTeams = teamsData
-        .filter(team => team.matchId === matchData.id)
-        .sort((a, b) => a.index - b.index);
+        .filter((team: FirestoreTeam) => team.matchId === matchData.id)
+        .sort((a: FirestoreTeam, b: FirestoreTeam) => a.index - b.index);
 
       // Transform teams with players
-      const teams: Team[] = matchTeams.map(team => {
+      const teams: Team[] = matchTeams.map((team: FirestoreTeam) => {
         // Get players for this team
         const teamPlayers = playersData
-          .filter(player => player.matchId === matchData.id && player.teamId === team.id)
-          .sort((a, b) => a.slotNumber - b.slotNumber);
+          .filter((player: FirestorePlayer) => player.matchId === matchData.id && player.teamId === team.id)
+          .sort((a: FirestorePlayer, b: FirestorePlayer) => a.slotNumber - b.slotNumber);
 
         // Create player array with proper slot positions
-        const players: Player[] = teamPlayers.map(player => {
+        const players: Player[] = teamPlayers.map((player: FirestorePlayer) => {
           const initials = player.name
             .split(' ')
-            .map(part => part[0])
+            .map((part: string) => part[0])
             .join('')
             .toUpperCase()
             .substring(0, 2);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { createMatchSchema } from '@/lib/validation/backend-validation';
 import { FirestoreMatch, FirestoreTeam } from '@/lib/types/backend';
+import type { Transaction } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Use transaction to create match and teams atomically
-    await adminDb.runTransaction(async (transaction) => {
+    await adminDb.runTransaction(async (transaction: Transaction) => {
       const matchRef = adminDb.collection('matches').doc(matchId);
       const teamARef = adminDb.collection('teams').doc(teamAData.id);
       const teamBRef = adminDb.collection('teams').doc(teamBData.id);

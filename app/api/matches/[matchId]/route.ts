@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { FirestoreMatch, FirestoreTeam, FirestorePlayer, Match, Team, Player } from '@/lib/types/backend';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 export async function GET(
   request: NextRequest,
@@ -31,8 +32,8 @@ export async function GET(
     }
 
     const matchData = matchDoc.data() as FirestoreMatch;
-    const teamsData = teamsSnapshot.docs.map((doc: any) => doc.data() as FirestoreTeam);
-    const playersData = playersSnapshot.docs.map((doc: any) => doc.data() as FirestorePlayer);
+    const teamsData = teamsSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as FirestoreTeam);
+    const playersData = playersSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as FirestorePlayer);
 
     // Transform data to frontend format
     const teams: Team[] = teamsData
@@ -43,13 +44,13 @@ export async function GET(
         
         // Fill players in their correct slots
         playersData
-          .filter(player => player.teamId === team.id)
-          .forEach(player => {
+          .filter((player: FirestorePlayer) => player.teamId === team.id)
+          .forEach((player: FirestorePlayer) => {
             const slotIndex = player.slotNumber - 1; // Convert to 0-based index
             if (slotIndex >= 0 && slotIndex < matchData.teamSize) {
               const initials = player.name
                 .split(' ')
-                .map(part => part[0])
+                .map((part: string) => part[0])
                 .join('')
                 .toUpperCase()
                 .substring(0, 2);

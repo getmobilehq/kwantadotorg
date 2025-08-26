@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import type { Transaction, DocumentSnapshot, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 export async function DELETE(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function DELETE(
     }
 
     // Use a transaction to delete match and all related data atomically
-    await adminDb.runTransaction(async (transaction) => {
+    await adminDb.runTransaction(async (transaction: Transaction) => {
       // 1. Check if match exists
       const matchRef = adminDb.collection('matches').doc(matchId);
       const matchDoc = await transaction.get(matchRef);
@@ -38,12 +39,12 @@ export async function DELETE(
         .get();
 
       // 4. Delete all players
-      playersSnapshot.docs.forEach(doc => {
+      playersSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
         transaction.delete(doc.ref);
       });
 
       // 5. Delete all teams
-      teamsSnapshot.docs.forEach(doc => {
+      teamsSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
         transaction.delete(doc.ref);
       });
 
