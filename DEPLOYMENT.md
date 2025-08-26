@@ -73,11 +73,50 @@ npm run export  # If using static export
 firebase deploy
 ```
 
-## Alternative: Vercel Deployment
+## CI/CD Pipeline with GitHub Actions
+
+### Automated Deployment Process
+
+The project includes a comprehensive CI/CD pipeline that:
+
+1. **Continuous Integration**
+   - Runs on every push/PR
+   - Executes linting and type checking
+   - Builds the application
+   - Performs security audits
+
+2. **Performance Testing**
+   - Lighthouse audits on PRs
+   - Performance, accessibility, and SEO checks
+
+3. **Automatic Deployment**
+   - Deploys to production on main branch push
+   - Uses Vercel for hosting
+
+### Required GitHub Secrets
+
+Set these in your GitHub repository settings:
+
+```bash
+# Firebase Configuration
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account@project.iam.gserviceaccount.com  
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Application
+NEXT_PUBLIC_BASE_URL=https://kwanta.org
+
+# Vercel Integration
+VERCEL_TOKEN=your-vercel-token
+VERCEL_ORG_ID=your-vercel-org-id
+VERCEL_PROJECT_ID=your-vercel-project-id
+```
+
+### Alternative: Vercel Deployment
 
 1. Connect GitHub repository to Vercel
 2. Add environment variables in Vercel dashboard
-3. Deploy automatically on push
+3. Deploy automatically on push via GitHub Actions
 
 ## Local Development with Firebase
 
