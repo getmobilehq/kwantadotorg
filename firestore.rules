@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Matches collection - public read, admin write only
+    match /matches/{matchId} {
+      // Allow public read access for all matches
+      allow read: if true;
+      
+      // Only allow writes through Cloud Functions (admin SDK)
+      // Direct client writes are denied for data integrity
+      allow create, update, delete: if false;
+    }
+    
+    // Teams collection - public read, admin write only
+    match /teams/{teamId} {
+      // Allow public read access for all teams
+      allow read: if true;
+      
+      // Only allow writes through Cloud Functions (admin SDK)
+      // Direct client writes are denied for data integrity
+      allow create, update, delete: if false;
+    }
+    
+    // Players collection - public read, admin write only
+    match /players/{playerId} {
+      // Allow public read access for all players
+      // This enables real-time updates for match participants
+      allow read: if true;
+      
+      // All writes must go through Cloud Functions for:
+      // - Race condition prevention
+      // - Validation enforcement
+      // - Slot conflict resolution
+      // - Transaction integrity
+      allow create, update, delete: if false;
+    }
+    
+    // Default deny rule for any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
