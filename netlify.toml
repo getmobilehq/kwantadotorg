@@ -1,0 +1,94 @@
+[build]
+  # Build command
+  command = "npm run build"
+  
+  # Output directory  
+  publish = ".next"
+  
+  # Node.js version
+  environment = { NODE_VERSION = "18" }
+
+[build.environment]
+  # Next.js configuration
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Next.js Plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirects for Next.js App Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+  force = false
+
+# Admin redirect - redirect /admin to /admin/login if not authenticated
+[[redirects]]
+  from = "/admin"
+  to = "/admin/login"
+  status = 302
+
+# API routes handling
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/__nextjs"
+  status = 200
+
+# Static file optimization
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Form handling (if needed for future contact forms)
+[forms]
+  settings = { autostart = false }
+
+# Functions configuration for API routes
+[functions]
+  # Increase timeout for Firebase operations
+  timeout = 30
+  
+  # Memory allocation
+  memory = 512
+
+# Environment variables template (set these in Netlify dashboard)
+# FIREBASE_PROJECT_ID = "your-project-id"
+# FIREBASE_CLIENT_EMAIL = "your-service-account@project.iam.gserviceaccount.com"  
+# FIREBASE_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+# NEXT_PUBLIC_BASE_URL = "https://kwanta.org"
