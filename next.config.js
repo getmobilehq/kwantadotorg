@@ -17,7 +17,7 @@ const nextConfig = {
   },
   // Bundle optimization
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false, // Disable CSS optimization to avoid critters dependency issue
     scrollRestoration: true,
   },
   // Production optimizations
