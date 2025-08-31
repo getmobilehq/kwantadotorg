@@ -22,8 +22,6 @@ const nextConfig = {
   },
   // Production optimizations
   swcMinify: true,
-  // Reduce bundle size
-  output: 'standalone',
   // Security headers
   async headers() {
     return [
