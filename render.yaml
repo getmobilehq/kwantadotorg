@@ -3,7 +3,7 @@ services:
     name: kwanta
     runtime: node
     buildCommand: npm ci --production=false && npm run build
-    startCommand: npm start
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
