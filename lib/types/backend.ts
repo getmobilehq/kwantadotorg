@@ -79,7 +79,7 @@ export interface Player {
 export interface Team {
   id: string;
   name: string;
-  players: Player[];
+  players: (Player | undefined)[];
 }
 
 export interface Match {

@@ -16,7 +16,7 @@ interface Player {
 interface Team {
   id: string;
   name: string;
-  players: Player[];
+  players: (Player | undefined)[];
 }
 
 interface Match {
@@ -68,7 +68,7 @@ export default function FieldView({ match, onSlotClick }: FieldViewProps) {
   };
 
   const getFilledCount = (team: Team) => {
-    // Count actual filled slots, not array length (handles sparse arrays)
+    // Count actual filled slots in sparse array
     return team.players.filter(player => player !== undefined && player !== null).length;
   };
 

@@ -68,7 +68,7 @@ export async function GET(
         return {
           id: team.id,
           name: team.name,
-          players: players.filter((p): p is Player => p !== undefined) // Keep sparse array structure but typed correctly
+          players: players // Keep sparse array with undefined slots to show taken positions
         };
       });
 
