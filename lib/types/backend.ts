@@ -8,6 +8,8 @@ export interface FirestoreMatch {
   location: string;
   teamSize: 5 | 7 | 11;
   createdBy?: string;
+  ownerId?: string; // User ID of the league owner who created this match
+  ownerEmail?: string; // Email of the league owner
   createdAt: string;
   inviteCode?: string;
   status: 'open' | 'closed';

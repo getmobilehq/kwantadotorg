@@ -3,11 +3,25 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FirestoreMatch, FirestoreTeam, FirestorePlayer, Match, Team, Player } from '@/lib/types/backend';
 import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
+    // Get query parameters
+    const url = request.nextUrl;
+    const ownerId = url.searchParams.get('ownerId');
+
+    // Build matches query based on ownership filter
+    let matchesQuery = adminDb.collection('matches').orderBy('createdAt', 'desc');
+    
+    if (ownerId) {
+      matchesQuery = matchesQuery.where('ownerId', '==', ownerId);
+    }
+
     // Get all matches, teams, and players
     const [matchesSnapshot, teamsSnapshot, playersSnapshot] = await Promise.all([
-      adminDb.collection('matches').orderBy('createdAt', 'desc').get(),
+      matchesQuery.get(),
       adminDb.collection('teams').get(),
       adminDb.collection('players').get()
     ]);

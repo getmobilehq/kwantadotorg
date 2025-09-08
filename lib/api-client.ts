@@ -48,6 +48,29 @@ async function handleResponse(response: Response) {
   return response.json();
 }
 
+// Get authentication headers
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add auth token if available (for league owners and super admin)
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('kwanta_auth_token');
+    if (token) {
+      if (token.startsWith('legacy_')) {
+        // Handle legacy super admin token
+        headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        // Handle regular JWT token
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+  }
+
+  return headers;
+}
+
 // Create a new match with two teams
 export async function createMatch(matchData: CreateMatchData, teamsData: { teamA: string; teamB: string }): Promise<string> {
   // Check if we're on the server side
@@ -57,9 +80,7 @@ export async function createMatch(matchData: CreateMatchData, teamsData: { teamA
     
   const response = await fetch(`${baseUrl}/api/matches`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       title: matchData.title,
       dateISO: matchData.date,

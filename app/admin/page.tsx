@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import { isAdminAuthenticated, logoutAdmin, getAdminUsername } from '@/lib/auth';
+import { isAuthenticated, logout, getCurrentUser, isSuperAdmin, isLeagueOwner } from '@/lib/auth-enhanced';
 import Container from '@/components/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,8 @@ interface Match {
   teamSize: number;
   teams: Team[];
   createdAt: string;
+  ownerId?: string;
+  ownerEmail?: string;
 }
 
 export default function AdminDashboard() {
@@ -53,7 +55,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     // Check authentication first
-    if (!isAdminAuthenticated()) {
+    if (!isAuthenticated()) {
       router.push('/admin/login');
       return;
     }
@@ -63,7 +65,15 @@ export default function AdminDashboard() {
 
   const fetchMatches = async () => {
     try {
-      const response = await fetch('/api/matches/all');
+      const user = getCurrentUser();
+      let url = '/api/matches/all';
+      
+      // If league owner, filter by ownership
+      if (user && isLeagueOwner()) {
+        url += `?ownerId=${user.id}`;
+      }
+      
+      const response = await fetch(url);
       const data = await response.json();
       setMatches(data.matches || []);
     } catch (error) {
@@ -102,12 +112,18 @@ export default function AdminDashboard() {
     return teams.reduce((total, team) => total + team.players.length, 0);
   };
 
-  const handleDeleteMatch = (matchId: string, matchTitle: string) => {
+  const handleDeleteMatch = (matchId: string, matchTitle: string, match: Match) => {
+    // Check if user can delete this match
+    const user = getCurrentUser();
+    if (isLeagueOwner() && match.ownerId !== user?.id) {
+      alert('You can only delete matches you created.');
+      return;
+    }
     setDeleteDialog({ open: true, matchId, matchTitle });
   };
 
   const handleLogout = () => {
-    logoutAdmin();
+    logout();
     router.push('/admin/login');
   };
 
@@ -174,12 +190,19 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                <Badge variant="secondary">
-                  Welcome, {getAdminUsername()}
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {isSuperAdmin() ? 'Super Admin Dashboard' : 'League Owner Dashboard'}
+                </h1>
+                <Badge variant={isSuperAdmin() ? 'destructive' : 'secondary'}>
+                  {getCurrentUser()?.name || 'Admin'}
+                </Badge>
+                <Badge variant="outline">
+                  {isSuperAdmin() ? 'Super Admin' : 'League Owner'}
                 </Badge>
               </div>
-              <p className="text-gray-600">Manage all matches and view team rosters</p>
+              <p className="text-gray-600">
+                {isSuperAdmin() ? 'Manage all matches and view team rosters' : 'Manage your matches and view team rosters'}
+              </p>
             </div>
             <div className="flex gap-2">
               <Link href="/create">
@@ -293,6 +316,11 @@ export default function AdminDashboard() {
                           <Badge variant="outline">
                             {match.teamSize}v{match.teamSize}
                           </Badge>
+                          {isSuperAdmin() && match.ownerEmail && (
+                            <Badge variant="secondary" className="text-xs">
+                              Owner: {match.ownerEmail}
+                            </Badge>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-600">
@@ -375,7 +403,7 @@ export default function AdminDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteMatch(match.id, match.title)}
+                          onClick={() => handleDeleteMatch(match.id, match.title, match)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
