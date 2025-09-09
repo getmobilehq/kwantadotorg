@@ -26,10 +26,10 @@ export default function Slot({
   const colorClasses = {
     emerald: isOccupied 
       ? 'bg-emerald-100 border-emerald-500 text-emerald-700' 
-      : 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-50',
+      : 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-50 bg-white/80 border-dashed',
     blue: isOccupied 
       ? 'bg-blue-100 border-blue-500 text-blue-700' 
-      : 'border-blue-300 hover:border-blue-400 hover:bg-blue-50'
+      : 'border-blue-300 hover:border-blue-400 hover:bg-blue-50 bg-white/80 border-dashed'
   };
 
   return (
@@ -46,7 +46,11 @@ export default function Slot({
       `}
       title={isOccupied ? `${playerName} - Click to remove` : 'Click to claim this slot'}
     >
-      {playerInitials}
+      {isOccupied ? (
+        playerInitials
+      ) : (
+        <span className="text-gray-400 text-xl font-light">+</span>
+      )}
     </button>
   );
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Slot from './Slot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
+import { Users, MousePointer2, Info } from 'lucide-react';
 
 interface Player {
   id: string;
@@ -82,6 +82,35 @@ export default function FieldView({ match, onSlotClick }: FieldViewProps) {
         <div className="text-gray-600 space-y-1">
           <p>{new Date(match.date).toLocaleDateString()} at {match.time}</p>
           <p>{match.location}</p>
+        </div>
+      </div>
+
+      {/* Registration Instructions */}
+      <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-2 border-dashed border-emerald-300 rounded-xl p-6 mb-8">
+        <div className="flex items-start gap-4">
+          <div className="bg-emerald-100 p-3 rounded-full">
+            <MousePointer2 className="w-6 h-6 text-emerald-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg text-emerald-900 mb-2 flex items-center gap-2">
+              <Info className="w-5 h-5" />
+              How to Register
+            </h3>
+            <div className="text-emerald-800 space-y-2">
+              <p className="font-semibold text-base">
+                🔹 <strong>Click on any empty circle (⚪) to register for that position</strong>
+              </p>
+              <p className="text-sm">
+                • Choose your preferred team (left or right)
+              </p>
+              <p className="text-sm">
+                • Click on any available slot to join the match
+              </p>
+              <p className="text-sm">
+                • Filled slots (with initials) are already taken
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

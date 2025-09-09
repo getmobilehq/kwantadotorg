@@ -8,7 +8,7 @@ import Container from '@/components/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, Users, Trophy, ChevronDown, ChevronUp, ExternalLink, Trash2, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Trophy, ChevronDown, ChevronUp, ExternalLink, Trash2, Download, FileText, FileSpreadsheet, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportMatchToExcel, exportMatchToPDF } from '@/lib/export-utils';
@@ -51,6 +51,7 @@ export default function AdminDashboard() {
   }>({ open: false, matchId: '', matchTitle: '' });
   const [deleting, setDeleting] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -62,6 +63,17 @@ export default function AdminDashboard() {
     setAuthChecking(false);
     fetchMatches();
   }, [router]);
+
+  // Real-time updates for League Owners
+  useEffect(() => {
+    if (!realTimeEnabled || authChecking || !isAuthenticated()) return;
+
+    const interval = setInterval(() => {
+      fetchMatches();
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [realTimeEnabled, authChecking]);
 
   const fetchMatches = async () => {
     try {
@@ -205,6 +217,24 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRealTimeEnabled(!realTimeEnabled)}
+                className={`${realTimeEnabled ? 'text-green-600 border-green-300' : 'text-gray-500'}`}
+              >
+                {realTimeEnabled ? <Wifi className="w-4 h-4 mr-2" /> : <WifiOff className="w-4 h-4 mr-2" />}
+                {realTimeEnabled ? 'Real-time On' : 'Real-time Off'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchMatches()}
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
               <Link href="/create">
                 <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
                   Create New Match
