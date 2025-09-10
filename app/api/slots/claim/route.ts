@@ -66,7 +66,16 @@ export async function POST(request: NextRequest) {
       const existingPlayerSnapshot = await transaction.get(existingPlayerQuery);
       
       if (!existingPlayerSnapshot.empty) {
-        throw new Error('SLOT_TAKEN');
+        // Get the occupying player's details
+        const occupyingPlayerDoc = existingPlayerSnapshot.docs[0];
+        const occupyingPlayer = occupyingPlayerDoc.data() as FirestorePlayer;
+        const initials = occupyingPlayer.name
+          .split(' ')
+          .map(part => part.charAt(0).toUpperCase())
+          .join('')
+          .substring(0, 2);
+        
+        throw new Error(`SLOT_TAKEN:${initials}:${occupyingPlayer.name}`);
       }
 
       // 4. Create the player document (atomic operation)
@@ -133,7 +142,26 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         
-        case 'SLOT_TAKEN':
+        default:
+          // Handle SLOT_TAKEN with player info: "SLOT_TAKEN:JD:John Doe"
+          if (error.message.startsWith('SLOT_TAKEN:')) {
+            const parts = error.message.split(':');
+            if (parts.length === 3) {
+              const [, initials, name] = parts;
+              return NextResponse.json(
+                { 
+                  error: 'slot_taken', 
+                  message: `This slot is taken by ${name} (${initials})`,
+                  occupyingPlayer: {
+                    initials,
+                    name
+                  }
+                },
+                { status: 409 }
+              );
+            }
+          }
+          
           return NextResponse.json(
             { error: 'slot_taken', message: 'That slot was just taken—pick another.' },
             { status: 409 }

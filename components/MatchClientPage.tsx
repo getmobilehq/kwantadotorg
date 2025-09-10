@@ -99,9 +99,24 @@ export default function MatchClientPage({ initialMatch, matchId }: MatchClientPa
       setRegistrationModal(prev => ({ ...prev, isOpen: false }));
       toast.success(`Welcome to ${registrationModal.teamName}!`);
     } catch (err: any) {
-      // Check if the error is due to slot already being taken
-      if (err.message?.includes('already taken') || err.message?.includes('occupied')) {
-        // Refresh the match data to show current state
+      // Check if the error has occupying player information
+      if (err.errorData?.error === 'slot_taken' && err.errorData?.occupyingPlayer) {
+        const { initials, name } = err.errorData.occupyingPlayer;
+        
+        // Refresh the match data to show current state immediately
+        try {
+          const response = await fetch(`/api/matches/${matchId}`);
+          if (response.ok) {
+            const refreshedMatch = await response.json();
+            setMatch(refreshedMatch);
+          }
+        } catch (refreshError) {
+          console.error('Failed to refresh match data:', refreshError);
+        }
+        
+        toast.error(`This slot is taken by ${name} (${initials}). Please choose a different slot.`);
+      } else if (err.message?.includes('already taken') || err.message?.includes('occupied') || err.message?.includes('taken')) {
+        // Fallback for generic slot taken errors
         try {
           const response = await fetch(`/api/matches/${matchId}`);
           if (response.ok) {

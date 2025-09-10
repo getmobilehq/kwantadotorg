@@ -43,7 +43,10 @@ export interface PlayerRegistration {
 async function handleResponse(response: Response) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: 'unknown_error', message: response.statusText }));
-    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    const error = new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    // Attach additional error data for enhanced error handling
+    (error as any).errorData = errorData;
+    throw error;
   }
   return response.json();
 }
