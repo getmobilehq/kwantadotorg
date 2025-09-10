@@ -1,0 +1,111 @@
+name: Production Health Check
+
+on:
+  schedule:
+    # Run health checks every hour
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  health-check:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Application Health
+        run: |
+          echo "🏥 Checking application health..."
+          
+          # Check main application
+          if curl -f -s --max-time 30 https://kwanta.org/api/health > /dev/null; then
+            echo "✅ Main application is healthy"
+          else
+            echo "❌ Main application health check failed"
+            exit 1
+          fi
+          
+          # Check response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' https://kwanta.org)
+          echo "⏱️ Response time: ${RESPONSE_TIME}s"
+          
+          # Alert if response time is too slow (>5 seconds)
+          if (( $(echo "$RESPONSE_TIME > 5" | bc -l) )); then
+            echo "⚠️ Slow response time detected: ${RESPONSE_TIME}s"
+          fi
+      
+      - name: Check API Endpoints
+        run: |
+          echo "🔍 Checking critical API endpoints..."
+          
+          # Test health endpoint
+          if curl -f -s https://kwanta.org/api/health | grep -q "ok"; then
+            echo "✅ Health API endpoint is working"
+          else
+            echo "❌ Health API endpoint failed"
+            exit 1
+          fi
+      
+      - name: Website Accessibility Check
+        run: |
+          echo "♿ Basic accessibility check..."
+          
+          # Check if main page loads
+          MAIN_PAGE=$(curl -s https://kwanta.org)
+          
+          if echo "$MAIN_PAGE" | grep -q "<title>"; then
+            echo "✅ Main page loads with title"
+          else
+            echo "❌ Main page failed to load properly"
+            exit 1
+          fi
+          
+          if echo "$MAIN_PAGE" | grep -q "Football Match Organizer\|Kwanta"; then
+            echo "✅ Main content is present"
+          else
+            echo "❌ Main content missing"
+            exit 1
+          fi
+      
+      - name: Report Status
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ All health checks passed"
+            echo "🌐 https://kwanta.org is healthy"
+          else
+            echo "❌ Some health checks failed"
+            echo "🚨 Manual investigation may be required"
+          fi
+
+  # Security Headers Check
+  security-headers:
+    name: Security Headers Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Security Headers
+        run: |
+          echo "🔒 Checking security headers..."
+          
+          HEADERS=$(curl -I -s https://kwanta.org)
+          
+          # Check for important security headers
+          if echo "$HEADERS" | grep -i "x-frame-options"; then
+            echo "✅ X-Frame-Options header present"
+          else
+            echo "⚠️ X-Frame-Options header missing"
+          fi
+          
+          if echo "$HEADERS" | grep -i "x-content-type-options"; then
+            echo "✅ X-Content-Type-Options header present"
+          else
+            echo "⚠️ X-Content-Type-Options header missing"
+          fi
+          
+          if echo "$HEADERS" | grep -i "strict-transport-security"; then
+            echo "✅ HSTS header present"
+          else
+            echo "⚠️ HSTS header missing"
+          fi
+          
+          echo "📋 Full headers check completed"

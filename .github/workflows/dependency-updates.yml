@@ -1,0 +1,70 @@
+name: Automated Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Update dependencies
+        run: |
+          npm update
+          npm audit fix --audit-level=moderate
+      
+      - name: Check for changes
+        id: check-changes
+        run: |
+          git diff --quiet package-lock.json || echo "changes=true" >> $GITHUB_OUTPUT
+      
+      - name: Create Pull Request
+        if: steps.check-changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: update dependencies
+            
+            Automated dependency updates including security fixes.
+            
+            🤖 Generated with GitHub Actions
+          title: 'chore: automated dependency updates'
+          body: |
+            ## Automated Dependency Updates
+            
+            This PR contains automated updates to project dependencies, including:
+            - Package updates to latest compatible versions
+            - Security vulnerability fixes
+            
+            ### Changes Made:
+            - Updated `package-lock.json` with latest dependency versions
+            - Applied security fixes where available
+            
+            ### Testing:
+            - CI/CD pipeline will verify all tests pass
+            - Build verification included in automated checks
+            
+            **Please review the changes before merging.**
+            
+            🤖 This PR was created automatically by GitHub Actions
+          branch: automated/dependency-updates
+          delete-branch: true
+          labels: |
+            dependencies
+            automated

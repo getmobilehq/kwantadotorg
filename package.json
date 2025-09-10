@@ -7,8 +7,14 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "echo \"No tests specified\" && exit 0",
+    "test:ci": "npm test",
+    "preview": "npm run build && npm start",
+    "check-all": "npm run lint && npm run type-check && npm test && npm run build",
+    "clean": "rm -rf .next",
+    "analyze": "cross-env ANALYZE=true npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
