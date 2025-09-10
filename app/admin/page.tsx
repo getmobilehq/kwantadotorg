@@ -8,7 +8,7 @@ import Container from '@/components/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, Users, Trophy, ChevronDown, ChevronUp, ExternalLink, Trash2, Download, FileText, FileSpreadsheet, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Trophy, ChevronDown, ChevronUp, ExternalLink, Trash2, Download, FileText, FileSpreadsheet, RefreshCw, Wifi, WifiOff, UserCheck, Mail, Phone, Hash } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportMatchToExcel, exportMatchToPDF } from '@/lib/export-utils';
@@ -373,18 +373,56 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* Progress Bar */}
-                        <div className="mt-4">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600">Players registered</span>
-                            <span className="font-semibold">{totalPlayers}/{totalSlots}</span>
+                        {/* Enhanced Player Registration Summary */}
+                        <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                              <UserCheck className="w-5 h-5 text-green-600" />
+                              Registration Status
+                            </h4>
+                            <Badge variant="outline" className="font-bold text-sm">
+                              {totalPlayers}/{totalSlots} players
+                            </Badge>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-emerald-500 h-2 rounded-full transition-all"
-                              style={{ width: `${fillPercentage}%` }}
-                            />
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            {match.teams.map((team, idx) => {
+                              const teamPlayers = team.players.filter(Boolean).length;
+                              const teamPercentage = (teamPlayers / match.teamSize) * 100;
+                              return (
+                                <div key={team.id} className="text-center p-3 bg-white rounded-lg shadow-sm border">
+                                  <div className="flex items-center justify-center gap-2 mb-2">
+                                    <div className={`w-3 h-3 rounded-full ${idx === 0 ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
+                                    <span className="font-semibold text-sm text-gray-700">{team.name}</span>
+                                  </div>
+                                  <div className="text-xl font-bold text-gray-900 mb-1">{teamPlayers}/{match.teamSize}</div>
+                                  <div className="text-xs text-gray-500 font-medium">{Math.round(teamPercentage)}% filled</div>
+                                </div>
+                              );
+                            })}
                           </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-700 font-medium">Overall Progress</span>
+                              <span className="font-bold text-gray-900">{Math.round(fillPercentage)}% complete</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                              <div 
+                                className="bg-gradient-to-r from-emerald-500 to-blue-500 h-3 rounded-full transition-all duration-500 shadow-sm" 
+                                style={{ width: `${fillPercentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          {fillPercentage === 100 && (
+                            <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded-lg">
+                              <div className="flex items-center justify-center gap-2">
+                                <Trophy className="w-5 h-5 text-green-700" />
+                                <span className="text-sm font-bold text-green-800">🎉 Match is Complete!</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -459,49 +497,97 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="space-y-2">
-                              {team.players.length === 0 ? (
-                                <p className="text-gray-500 text-sm italic">No players registered yet</p>
+                              {team.players.filter(Boolean).length === 0 ? (
+                                <div className="text-center py-4">
+                                  <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                  <p className="text-gray-500 text-sm italic">No players registered yet</p>
+                                  <p className="text-xs text-gray-400 mt-1">Players will appear here when they join</p>
+                                </div>
                               ) : (
-                                team.players.map((player, playerIndex) => (
+                                team.players
+                                  .map((player, slotIndex) => ({ player, slotIndex }))
+                                  .filter(({ player }) => player !== undefined && player !== null)
+                                  .map(({ player, slotIndex }) => (
                                   <div 
                                     key={player.id} 
-                                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                                    className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border-l-4 border-l-emerald-400 shadow-sm hover:shadow-md transition-all duration-200"
                                   >
-                                    <div className="flex items-center gap-3">
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${index === 0 ? 'bg-emerald-500' : 'bg-blue-500'}`}>
-                                        {player.initials}
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex items-start gap-4 flex-1">
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-base font-bold ${index === 0 ? 'bg-emerald-500' : 'bg-blue-500'} shadow-lg ring-2 ring-white`}>
+                                          {player.initials}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 mb-3">
+                                            <UserCheck className="w-5 h-5 text-green-600" />
+                                            <h4 className="font-bold text-lg text-gray-900 truncate">{player.name}</h4>
+                                          </div>
+                                          <div className="space-y-2">
+                                            {player.email && (
+                                              <div className="flex items-center gap-3 text-sm text-gray-700 bg-blue-50 px-3 py-2 rounded-lg">
+                                                <Mail className="w-4 h-4 text-blue-600" />
+                                                <span className="truncate font-medium">{player.email}</span>
+                                              </div>
+                                            )}
+                                            {player.phone && (
+                                              <div className="flex items-center gap-3 text-sm text-gray-700 bg-green-50 px-3 py-2 rounded-lg">
+                                                <Phone className="w-4 h-4 text-green-600" />
+                                                <span className="font-medium">{player.phone}</span>
+                                              </div>
+                                            )}
+                                            {!player.email && !player.phone && (
+                                              <div className="flex items-center gap-3 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                                                <Mail className="w-4 h-4" />
+                                                <span className="italic">No contact information provided</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <p className="font-medium text-sm">{player.name}</p>
-                                        <p className="text-xs text-gray-500">
-                                          {player.email || player.phone || 'No contact info'}
-                                        </p>
+                                      <div className="flex flex-col items-end gap-2 ml-4">
+                                        <Badge variant="default" className={`${index === 0 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold px-4 py-2 text-sm shadow-md`}>
+                                          <Hash className="w-4 h-4 mr-2" />
+                                          Position #{slotIndex + 1}
+                                        </Badge>
+                                        <span className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full border">
+                                          {team.name}
+                                        </span>
                                       </div>
                                     </div>
-                                    <Badge variant="outline" className="text-xs">
-                                      Slot {playerIndex + 1}
-                                    </Badge>
                                   </div>
                                 ))
                               )}
                               
-                              {/* Empty slots */}
-                              {Array.from({ length: match.teamSize - team.players.length }).map((_, i) => (
-                                <div 
-                                  key={`empty-${i}`} 
-                                  className="flex items-center justify-between p-2 border-2 border-dashed border-gray-200 rounded-lg"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                      <Users className="w-4 h-4 text-gray-400" />
+                              {/* Available slots summary */}
+                              {(() => {
+                                const filledSlots = team.players.filter(Boolean).length;
+                                const availableSlots = match.teamSize - filledSlots;
+                                return availableSlots > 0 ? (
+                                  <div className="mt-4 p-3 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-gray-400" />
+                                        <span className="text-sm font-medium text-gray-600">
+                                          {availableSlots} available slot{availableSlots !== 1 ? 's' : ''}
+                                        </span>
+                                      </div>
+                                      <Badge variant="outline" className="text-xs text-gray-500 bg-white">
+                                        {filledSlots}/{match.teamSize} filled
+                                      </Badge>
                                     </div>
-                                    <p className="text-sm text-gray-400">Available slot</p>
                                   </div>
-                                  <Badge variant="outline" className="text-xs text-gray-400">
-                                    Slot {team.players.length + i + 1}
-                                  </Badge>
-                                </div>
-                              ))}
+                                ) : (
+                                  <div className="mt-4 p-3 bg-green-50 border-2 border-green-200 rounded-lg">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Trophy className="w-5 h-5 text-green-600" />
+                                      <span className="text-sm font-bold text-green-800">Team Complete!</span>
+                                      <Badge className="bg-green-600 text-white ml-2">
+                                        {filledSlots}/{match.teamSize}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </div>
                         ))}
