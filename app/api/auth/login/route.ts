@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (!userData.isActive) {
       return NextResponse.json({
         success: false,
-        message: 'Account is deactivated. Please contact support.'
+        message: 'Your account is pending Super Admin approval. Please wait for activation before you can login.'
       } as AuthResponse, { status: 401 });
     }
 

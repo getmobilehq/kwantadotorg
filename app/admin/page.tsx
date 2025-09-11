@@ -44,6 +44,8 @@ export default function AdminDashboard() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedMatches, setExpandedMatches] = useState<Set<string>>(new Set());
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [loadingPendingUsers, setLoadingPendingUsers] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     matchId: string;
@@ -62,6 +64,7 @@ export default function AdminDashboard() {
     }
     setAuthChecking(false);
     fetchMatches();
+    fetchPendingUsers(); // Fetch pending users for Super Admin
   }, [router]);
 
   // Real-time updates for League Owners
@@ -92,6 +95,52 @@ export default function AdminDashboard() {
       console.error('Error fetching matches:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingUsers = async () => {
+    if (!isSuperAdmin()) return;
+    
+    setLoadingPendingUsers(true);
+    try {
+      const response = await fetch('/api/admin/pending-users', {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingUsers(data.users || []);
+      } else {
+        console.error('Failed to fetch pending users:', response.statusText);
+        setPendingUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching pending users:', error);
+      setPendingUsers([]);
+    } finally {
+      setLoadingPendingUsers(false);
+    }
+  };
+
+  const approveUser = async (userId: string, approve: boolean) => {
+    try {
+      const response = await fetch('/api/admin/approve-user', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId, approve }),
+      });
+
+      if (response.ok) {
+        // Refresh pending users list
+        fetchPendingUsers();
+        alert(`User ${approve ? 'approved' : 'rejected'} successfully`);
+      } else {
+        const error = await response.json();
+        alert(`Failed to ${approve ? 'approve' : 'reject'} user: ${error.message}`);
+      }
+    } catch (error) {
+      alert(`Failed to ${approve ? 'approve' : 'reject'} user. Please try again.`);
     }
   };
 

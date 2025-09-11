@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role: 'league_owner' as const,
       createdAt: new Date().toISOString(),
-      isActive: true
+      isActive: false, // League Owners require Super Admin approval
+      approvedAt: null,
+      approvedBy: null
     };
 
     await userRef.set(userData);
@@ -50,7 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       user: userResponse,
-      message: 'Account created successfully'
+      message: 'Account created successfully! Please wait for Super Admin approval before you can login and create matches.'
     } as AuthResponse, { status: 201 });
 
   } catch (error) {
