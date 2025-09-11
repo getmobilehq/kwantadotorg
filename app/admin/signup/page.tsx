@@ -109,8 +109,14 @@ export default function LeagueOwnerSignup() {
               </div>
               <CardTitle className="text-2xl">Create League Owner Account</CardTitle>
               <p className="text-gray-600 mt-2">
-                Sign up to create and manage your own matches
+                Sign up as a League Owner to create and manage your own football matches
               </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+                <p className="text-sm text-amber-800">
+                  <strong>Note:</strong> League Owner accounts require Super Admin approval before activation. 
+                  You'll be notified when your account is ready to use.
+                </p>
+              </div>
             </CardHeader>
             
             <CardContent>

@@ -361,6 +361,110 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Super Admin Management */}
+        {isSuperAdmin() && (
+          <div className="mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Pending League Owner Approvals */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-amber-600" />
+                    Pending League Owner Approvals
+                    {pendingUsers.length > 0 && (
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700">
+                        {pendingUsers.length}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loadingPendingUsers ? (
+                    <p className="text-gray-500 text-center py-4">Loading pending approvals...</p>
+                  ) : pendingUsers.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No pending approvals</p>
+                  ) : (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {pendingUsers.map((user) => (
+                        <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{user.name}</p>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <p className="text-xs text-gray-500">
+                              Registered: {new Date(user.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => approveUser(user.id, true)}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => approveUser(user.id, false)}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Super Admin Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge className="w-5 h-5 bg-red-500" />
+                    Super Admin Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">Create New Super Admin</h4>
+                    <p className="text-sm text-red-700 mb-3">
+                      Only Super Admins can create other Super Admin accounts. Use this carefully.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 hover:bg-red-100"
+                      onClick={() => window.alert('Super Admin creation UI coming soon. Use API endpoint for now.')}
+                    >
+                      Create Super Admin
+                    </Button>
+                  </div>
+                  
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">System Overview</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Total League Owners:</span>
+                        <span className="font-medium">{matches.length > 0 ? new Set(matches.map(m => m.ownerEmail)).size : 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pending Approvals:</span>
+                        <span className="font-medium">{pendingUsers.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Active Matches:</span>
+                        <span className="font-medium">{matches.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {/* Matches List */}
         <div className="space-y-6">
           {matches.length === 0 ? (
